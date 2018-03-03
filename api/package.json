@@ -9,7 +9,10 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "bcryptjs": "^2.4.3",
     "hapi": "^17.2.1",
+    "hapi-auth-jwt2": "https://github.com/salzhrani/hapi-auth-jwt2.git#v-17",
+    "jsonwebtoken": "^8.2.0",
     "onoff": "^2.0.0",
     "winston": "^2.4.0",
     "winston-daily-rotate-file": "^1.7.2"

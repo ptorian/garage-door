@@ -1,5 +1,6 @@
 const path = require("path");
 const Hapi = require("hapi");
+const jwt = require("jsonwebtoken");
 const winston = require("winston");
 require("winston-daily-rotate-file");
 
@@ -53,6 +54,19 @@ const traceLogger = new winston.Logger({
     ]
 });
 
+async function registerJwt(server) {
+    await server.register(require('hapi-auth-jwt2'));
+
+    server.auth.strategy('jwt', 'jwt',
+        {
+            key: server.app.jwtKey,
+            validate: () => ({isValid: true}),
+            verifyOptions: { algorithms: [ 'HS256' ] }
+        });
+
+    server.auth.default('jwt');
+}
+
 async function registerRoutes(server) {
     await server.register(routes, {
         routes: {
@@ -87,6 +101,13 @@ function addExtensions(server) {
                 code: request.response.statusCode
             });
 
+            if (request.app.isAuthenticated && request.response.header != null) {
+                const tokenPayload = {};
+
+                const token = jwt.sign(tokenPayload, request.server.app.jwtKey, {expiresIn: config.jwtValidTimespan});
+                request.response.header("Authorization", `Bearer ${token}`);
+            }
+
             return h.continue;
         }
     });
@@ -106,7 +127,9 @@ async function startServer() {
 
     server.app.logger = appLogger;
     server.app.traceLogger = traceLogger;
+    server.app.jwtKey = config.jwtKey;
 
+    await registerJwt(server);
     await registerRoutes(server);
     addExtensions(server);
 
