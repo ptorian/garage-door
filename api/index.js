@@ -76,11 +76,12 @@ async function registerRoutes(server) {
 }
 
 function addExtensions(server) {
+    const piProvider = new PiProvider(server.app.logger);
     server.ext({
         type: "onRequest",
         method: (request, h) => {
-            request.app.getNewPiProvider = () => {
-                return new PiProvider(request.server.app.logger);
+            request.app.getPiProvider = () => {
+                return piProvider;
             };
 
             return h.continue;
